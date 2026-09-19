@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Ride Relief: Chrome에서 디버그",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:5173/",
+      "webRoot": "${workspaceFolder}/src",
+      "preLaunchTask": "Ride Relief: 실행"
+    }
+  ]
+}
