@@ -1,8 +1,26 @@
-# Ride Relief — 자전거 코스 3D 프린팅 MVP
+# Ride Relief — 러닝·자전거 코스를 3D 프린팅 모델로
 
-Mac에서 실행하는 로컬 웹앱입니다. 남한 전체 지도에서 출발·도착과 출력 범위를 직접 정하고, 지형·건물·수면·코스를 STL 또는 3MF로 저장할 수 있습니다.
+달리거나 자전거로 달린 길을 지형·건물·공원·수면과 함께 입체 모형으로 만드는 웹앱입니다. 남한 전체 지도에서 코스와 출력 범위를 직접 정하거나 GPX·운동 앱 스크린샷을 가져와 STL 또는 3MF로 저장할 수 있습니다.
 
-**웹에서 바로 실행:** https://rladbstn8090-source.github.io/ride-relief/
+> **웹에서 바로 실행:** https://rladbstn8090-source.github.io/ride-relief/
+
+## 핵심 기능
+
+- 지도에서 출발·도착·경유점을 직접 그리거나 GPX를 가져옵니다.
+- Nike Run Club 등 운동 앱과 네이버 지도 스크린샷의 코스 선을 분석하고 실제 지도에 맞춥니다.
+- 직사각형·원·자유 영역으로 출력 범위를 정하면 변경 사항이 3D 미리보기에 자동 반영됩니다.
+- 짧은 도시런부터 마라톤·자전거 종주까지 192×192~320×320 고도 셀과 OpenStreetMap 지물을 사용합니다.
+- 해발 200m 이하와 공원·녹지는 연두색, 200m 초과 지형은 초록색으로 구분합니다.
+- 3MF는 연두·초록·파랑·주황·건물색의 5색 재료를 포함하고, STL은 하나의 닫힌 단색 입체로 저장합니다.
+- 코스·범위·모형 설정을 브라우저에 저장해 다음에 다시 불러올 수 있습니다.
+
+| 색상 | 3D 레이어 |
+| --- | --- |
+| 연두 | 해발 200m 이하 지형, 공원·녹지 |
+| 초록 | 해발 200m 초과 지형 |
+| 파랑 | 강·호수·바다 |
+| 주황 | 러닝·자전거 코스 |
+| 흰색 계열 | 건물 |
 
 ## 바로 실행
 
@@ -67,7 +85,7 @@ src/types.ts                공통 좌표·영역·레이어·모델 형식
 src/data/jinju.ts            진주 저장 범위, 검증 경로와 거리 계산
 src/data/korea.ts            남한 로컬 고도 범위
 src/data/providers.ts        로컬 데이터 / 원격 고도·OSM 공급자
-src/data/vector-features.ts  광역시 Shortbread 벡터 타일 조립
+src/data/vector-features.ts  전국 Shortbread 벡터 타일 조립
 src/data/selection-area.ts   직사각형·원·자유 영역 계산
 src/geometry/model.ts        닫힌 지형, 레이어, Boolean 결합·분할
 src/geometry/export.ts       이진 STL, 표준 3MF 패키징
@@ -80,7 +98,7 @@ public/data/terrain/9/       남한 전역 Mapzen Terrarium 고도 타일
 
 사진·GPX 입력 화면은 `src/ui/route-import.ts`에 있습니다. 이미지 색상 분리·중심선 추출·좌표 변환은 `src/data/image-route.ts`에 분리되어 있습니다. 가져온 데이터는 기존 `Point[]` 형식으로 전달하므로 같은 지형·모형·내보내기를 사용합니다.
 
-3D 형상은 Manifold의 Boolean 연산을 사용합니다. STL은 모든 레이어를 하나로 합칩니다. 3MF는 코스 > 건물 > 수면 > 지형 순서로 겹침을 제거하고 하나의 조립체에 넣어 상대 위치를 유지합니다. 면 맞닿음은 유지하므로 부품을 개별 배치하지 마세요.
+3D 형상은 Manifold의 Boolean 연산을 사용합니다. STL은 모든 레이어를 하나로 합칩니다. 3MF는 코스 > 건물 > 수면 > 공원 > 고도별 지형 순서로 겹침을 제거하고 하나의 조립체에 넣어 상대 위치를 유지합니다. 공원과 200m 이하 지형은 같은 연두색 재료를 공유합니다. 면 맞닿음은 유지하므로 부품을 개별 배치하지 마세요.
 
 ## 검증
 
@@ -90,7 +108,7 @@ npm run build
 npm run preview
 ```
 
-자동 검사: 기본 예제, 크기 변경, 지형 강조, 선 두께 변경, 영역 잘라내기, 레이어 끄기, 해안 고도의 바다 판별·평탄화, 빈 경로·영역 밖 경로의 오류 처리, 모든 모서리에 두 면이 만나는 닫힌 메시, 양의 부피, STL 단일 연결체, 3MF 분할 부피 보존, 파일 패키지 구조.
+자동 검사 25개: 기본 예제, 크기 변경, 지형 강조, 200m 고도 분할, 5색 3MF 재료 공유, 장거리 고해상도 계획, 선 두께 변경, 영역 잘라내기, 레이어 끄기, 해안 고도의 바다 판별·평탄화, 빈 경로·영역 밖 경로의 오류 처리, 닫힌 메시, 양의 부피, STL 단일 연결체, 3MF 분할 부피 보존과 파일 패키지 구조.
 
 Bambu Studio 2.8.2.61의 `--info`로 두 예제를 읽어 **manifold = yes** 및 mm 크기를 확인했습니다. STL은 연결된 한 부품입니다. 3MF의 연결된 덩어리 수는 개별 건물·하천 섬 때문에 많을 수 있으며 레이어 개수와 다릅니다.
 
@@ -99,7 +117,7 @@ Bambu Studio 2.8.2.61의 `--info`로 두 예제를 읽어 **manifold = yes** 및
 ## 출처
 
 - 지도·건물·수면: © OpenStreetMap contributors, ODbL 1.0. https://www.openstreetmap.org/copyright
-- 광역시 상세 벡터 타일: OpenStreetMap Shortbread. https://vector.openstreetmap.org/shortbread_v1/tilejson.json · 스키마: https://shortbread-tiles.org/schema/1.0/
+- 전국 상세 벡터 타일: OpenStreetMap Shortbread. https://vector.openstreetmap.org/shortbread_v1/tilejson.json · 스키마: https://shortbread-tiles.org/schema/1.0/
 - 지역·주소 검색: OpenStreetMap Nominatim Search API. https://nominatim.org/release-docs/latest/api/Search/ · 공개 서비스 사용 정책: https://operations.osmfoundation.org/policies/nominatim/
 - 저장된 OSM 응답의 데이터 기준 시각: 2026-06-01T08:52:28Z. 추출 범위에 포함된 데이터의 완전성·최신성을 보장하지 않습니다.
 - 고도: AWS 공개 Elevation Tiles / Mapzen Terrarium. https://registry.opendata.aws/terrain-tiles/
@@ -117,7 +135,7 @@ Bambu Studio 2.8.2.61의 `--info`로 두 예제를 읽어 **manifold = yes** 및
 1. 네이버 지도에서 자전거 또는 도보 길찾기 결과가 전체 화면에 보이도록 캡처합니다.
 2. 사진을 선택하면 굵은 파란 경로와 안쪽의 흰 방향 화살표를 하나의 선으로 자동 인식합니다. 자동 실행되지 않으면 **네이버 파란 경로 자동 인식**을 누릅니다.
 3. **위치 맞추기 시작**을 누르고 출발·도착 핀 끝이나 멀리 떨어진 교차로 두 곳을 `사진 A → 실제 지도 A → 사진 B → 실제 지도 B` 순서로 맞춥니다.
-4. 지도 위 주황색 코스를 확인하고 적용하면 코스 전체 범위와 남한 로컬 실제 고도가 곧바로 3D 미리보기에 반영됩니다. 부산–진주처럼 긴 코스는 건물을 생략한 간략 지형으로 표시됩니다.
+4. 지도 위 주황색 코스를 확인하고 적용하면 코스 전체 범위와 실제 고도가 곧바로 3D 미리보기에 반영됩니다. 부산–진주처럼 긴 코스도 범위에 맞춘 고해상도 지형과 지도 타일을 사용하므로 처리 시간이 더 걸릴 수 있습니다.
 
 제공된 부산–진주 네이버 길찾기 화면은 900 px 분석 크기에서 105개 굴곡점으로 복원해 파란 선 전체를 추적하는 것을 확인했습니다.
 
