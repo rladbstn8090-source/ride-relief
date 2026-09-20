@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { vectorTileRange } from './vector-features';
-import { metropolitanCity } from './providers';
+import { vectorTileRange, vectorTileZoom } from './vector-features';
+import { metropolitanCity, terrainQuality } from './providers';
 
 test('metropolitan city detail mode covers the seven target cities', () => {
   assert.equal(metropolitanCity({ south: 35.14, west: 129.02, north: 35.20, east: 129.12 }), '부산');
@@ -19,4 +19,18 @@ test('vector tile range is finite and ordered', () => {
   assert(Number.isInteger(range.west));
   assert(range.west <= range.east);
   assert(range.north <= range.south);
+});
+
+test('wide marathon and traverse ranges retain print-quality terrain and bounded vector tile work', () => {
+  const marathon = { south: 35.0, west: 128.8, north: 35.4, east: 129.25 };
+  const traverse = { south: 34.7, west: 126.2, north: 37.9, east: 129.5 };
+  assert.equal(terrainQuality(marathon).resolution, 256);
+  assert.equal(terrainQuality(traverse).resolution, 320);
+  for (const bounds of [marathon, traverse]) {
+    const zoom = vectorTileZoom(bounds);
+    const range = vectorTileRange(bounds, zoom);
+    const count = (range.east - range.west + 1) * (range.south - range.north + 1);
+    assert(count <= 640);
+    assert(zoom >= 8 && zoom <= 14);
+  }
 });
